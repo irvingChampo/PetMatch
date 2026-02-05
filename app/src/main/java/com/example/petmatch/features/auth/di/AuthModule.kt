@@ -6,10 +6,14 @@ import com.example.petmatch.features.auth.domain.usecases.*
 import com.example.petmatch.features.auth.presentation.viewmodels.AuthViewModelFactory
 
 class AuthModule(private val appContainer: AppContainer) {
-    private val repository by lazy { AuthRepositoryImpl(appContainer.petMatchApi) }
 
-    fun provideFactory() = AuthViewModelFactory(
-        LoginUseCase(repository),
-        RegisterUseCase(repository)
-    )
+    private fun provideRepository() = AuthRepositoryImpl(appContainer.petMatchApi)
+
+    fun provideAuthViewModelFactory(): AuthViewModelFactory {
+        val repo = provideRepository()
+        return AuthViewModelFactory(
+            LoginUseCase(repo),
+            RegisterUseCase(repo)
+        )
+    }
 }

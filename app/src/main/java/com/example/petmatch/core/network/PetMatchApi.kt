@@ -1,11 +1,11 @@
 package com.example.petmatch.core.network
 
-import com.example.petmatch.features.auth.data.model.*
-import com.example.petmatch.features.petmatch.data.model.*
+import com.example.petmatch.features.auth.data.datasources.remote.model.*
+import com.example.petmatch.features.petmatch.data.datasources.remote.model.*
 import retrofit2.http.*
 
 interface PetMatchApi {
-    // Auth (Ya creados)
+    // Auth
     @POST("usuarios/login")
     suspend fun login(@Body request: LoginRequest): AuthResponse
     @POST("usuarios/registro")

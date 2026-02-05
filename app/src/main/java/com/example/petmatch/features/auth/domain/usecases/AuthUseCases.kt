@@ -1,5 +1,4 @@
 package com.example.petmatch.features.auth.domain.usecases
-
 import com.example.petmatch.features.auth.domain.repositories.AuthRepository
 
 class LoginUseCase(private val repository: AuthRepository) {

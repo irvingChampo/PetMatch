@@ -1,25 +1,36 @@
 package com.example.petmatch.features.petmatch.data.repositories
 
 import com.example.petmatch.core.network.PetMatchApi
-import com.example.petmatch.features.petmatch.data.model.*
+import com.example.petmatch.features.petmatch.data.datasources.remote.mapper.toDomain
+import com.example.petmatch.features.petmatch.data.datasources.remote.model.HogarDto
+import com.example.petmatch.features.petmatch.data.datasources.remote.model.MascotaDto
+import com.example.petmatch.features.petmatch.domain.entities.Home
+import com.example.petmatch.features.petmatch.domain.entities.Pet
+import com.example.petmatch.features.petmatch.domain.repositories.PetMatchRepository
 
-class PetMatchRepositoryImpl(private val api: PetMatchApi) {
-    suspend fun getMascotas() = try { Result.success(api.getMascotas()) } catch (e: Exception) { Result.failure(e) }
-    suspend fun getHogares() = try { Result.success(api.getHogares()) } catch (e: Exception) { Result.failure(e) }
+class PetMatchRepositoryImpl(private val api: PetMatchApi) : PetMatchRepository {
+    override suspend fun getPets(): List<Pet> = api.getMascotas().map { it.toDomain() }
+    override suspend fun getHomes(): List<Home> = api.getHogares().map { it.toDomain() }
 
-    suspend fun crearMascota(m: MascotaDto) = try { Result.success(api.crearMascota(m)) } catch (e: Exception) { Result.failure(e) }
-    suspend fun crearHogar(h: HogarDto) = try { Result.success(api.crearHogar(h)) } catch (e: Exception) { Result.failure(e) }
+    override suspend fun createPet(pet: Pet): Pet {
+        val dto = MascotaDto(0, pet.nombre, pet.especie, pet.edad, pet.estadoSalud, pet.estado, null)
+        return api.crearMascota(dto).toDomain()
+    }
 
-    // LA TRANSACCIÓN: Vincular Mascota a Hogar
-    suspend fun asignarAcogida(idMascota: Int, idHogar: Int, nuevaOcupacion: Int): Result<Boolean> {
+    override suspend fun createHome(home: Home): Home {
+        val dto = HogarDto(0, home.nombreVoluntario, home.direccion, home.capacidad, home.ocupacionActual, home.tipoMascotaAceptada)
+        return api.crearHogar(dto).toDomain()
+    }
+
+    override suspend fun assignPetToHome(petId: Int, homeId: Int, currentOccupancy: Int): Boolean {
         return try {
-            // 1. Actualizar Mascota
-            api.actualizarMascota(idMascota, mapOf("estado" to "En acogida", "hogarId" to idHogar.toString()))
-            // 2. Actualizar Hogar (Capacidad)
-            api.actualizarHogar(idHogar, mapOf("ocupacionActual" to nuevaOcupacion))
-            Result.success(true)
+            // Transacción: Parte 1 - Actualizar Mascota
+            api.actualizarMascota(petId, mapOf("estado" to "En acogida", "hogarId" to homeId.toString()))
+            // Transacción: Parte 2 - Actualizar Hogar
+            api.actualizarHogar(homeId, mapOf("ocupacionActual" to currentOccupancy + 1))
+            true
         } catch (e: Exception) {
-            Result.failure(e)
+            false
         }
     }
 }
