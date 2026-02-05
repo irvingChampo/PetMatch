@@ -19,6 +19,16 @@ class AuthViewModel(
         viewModelScope.launch {
             loginUseCase(email, pass).fold(
                 onSuccess = { _uiState.update { it.copy(isLoading = false, isSuccess = true) } },
+                onFailure = { err -> _uiState.update { it.copy(isLoading = false, error = "Error: Credenciales inválidas") } }
+            )
+        }
+    }
+
+    fun register(nombre: String, email: String, pass: String, tel: String) {
+        _uiState.update { it.copy(isLoading = true, error = null) }
+        viewModelScope.launch {
+            registerUseCase(nombre, email, pass, tel).fold(
+                onSuccess = { _uiState.update { it.copy(isLoading = false, isSuccess = true) } },
                 onFailure = { err -> _uiState.update { it.copy(isLoading = false, error = err.message) } }
             )
         }

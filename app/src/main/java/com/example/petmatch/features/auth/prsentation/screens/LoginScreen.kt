@@ -9,20 +9,43 @@ import androidx.compose.ui.unit.dp
 import com.example.petmatch.features.auth.presentation.viewmodels.AuthViewModel
 
 @Composable
-fun LoginScreen(viewModel: AuthViewModel, onLoginSuccess: () -> Unit) {
+fun LoginScreen(
+    viewModel: AuthViewModel,
+    onLoginSuccess: () -> Unit,
+    onNavigateToRegister: () -> Unit
+) {
     val state by viewModel.uiState.collectAsState()
     var email by remember { mutableStateOf("") }
     var pass by remember { mutableStateOf("") }
 
-    if (state.isSuccess) { LaunchedEffect(Unit) { onLoginSuccess() } }
+    if (state.isSuccess) {
+        LaunchedEffect(Unit) { onLoginSuccess() }
+    }
 
-    Column(Modifier.fillMaxSize().padding(24.dp), Arrangement.Center, Alignment.CenterHorizontally) {
+    Column(
+        Modifier.fillMaxSize().padding(24.dp),
+        Arrangement.Center,
+        Alignment.CenterHorizontally
+    ) {
         Text("PetMatch", style = MaterialTheme.typography.displayLarge, color = MaterialTheme.colorScheme.primary)
+
         Spacer(Modifier.height(32.dp))
 
-        OutlinedTextField(email, { email = it }, label = { Text("Email") }, modifier = Modifier.fillMaxWidth())
+        OutlinedTextField(
+            value = email,
+            onValueChange = { email = it },
+            label = { Text("Email") },
+            modifier = Modifier.fillMaxWidth()
+        )
+
         Spacer(Modifier.height(16.dp))
-        OutlinedTextField(pass, { pass = it }, label = { Text("Password") }, modifier = Modifier.fillMaxWidth())
+
+        OutlinedTextField(
+            value = pass,
+            onValueChange = { pass = it },
+            label = { Text("Password") },
+            modifier = Modifier.fillMaxWidth()
+        )
 
         if (state.error != null) {
             Text(state.error!!, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(top = 8.dp))
@@ -35,6 +58,10 @@ fun LoginScreen(viewModel: AuthViewModel, onLoginSuccess: () -> Unit) {
         ) {
             if (state.isLoading) CircularProgressIndicator(Modifier.size(24.dp))
             else Text("Iniciar Sesión")
+        }
+
+        TextButton(onClick = onNavigateToRegister) {
+            Text("¿No tienes cuenta? Regístrate aquí")
         }
     }
 }

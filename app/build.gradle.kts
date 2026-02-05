@@ -10,7 +10,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.petmatch"
-        minSdk = 24
+        minSdk = 26 // Subimos a 26 como el profesor
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
@@ -27,20 +27,39 @@ android {
             )
         }
     }
+
+    // Actualizamos a Java 21 como el profesor
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
-    kotlinOptions {
-        jvmTarget = "11"
+
+    kotlin {
+        jvmToolchain(21)
     }
+
     buildFeatures {
         compose = true
+        buildConfig = true // Habilitamos BuildConfig
+    }
+
+    // Añadimos los Flavors del profesor
+    flavorDimensions.add("environment")
+    productFlavors {
+        create("dev") {
+            dimension = "environment"
+            buildConfigField("String", "BASE_URL", "\"https://api.petmatch.com/dev/\"") // URL de ejemplo
+            resValue("string", "app_name", "PetMatch (DEV)")
+        }
+        create("prod") {
+            dimension = "environment"
+            buildConfigField("String", "BASE_URL", "\"https://api.petmatch.com/prod/\"")
+            resValue("string", "app_name", "PetMatch")
+        }
     }
 }
 
 dependencies {
-
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -49,11 +68,16 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
-    // Librerías PetMatch
+
+    // ViewModel y Navigation (Cruciales para que no se cierre la app)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.navigation.compose)
+
+    // Red y Carga de Imágenes (Usando tus alias actuales)
     implementation(libs.retrofit.main)
     implementation(libs.retrofit.gson)
     implementation(libs.coil.compose)
-    implementation(libs.navigation.compose)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
