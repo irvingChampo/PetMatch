@@ -1,20 +1,24 @@
 package com.example.petmatch.features.petmatch.data.datasources.remote.model
 
+import com.google.gson.annotations.SerializedName
+
 data class MascotaDto(
-    val id: Int,
-    val nombre: String,
-    val especie: String,
-    val edad: Int,
-    val estadoSalud: String,
-    val estado: String,
-    val fotoUrl: String?
+    @SerializedName("id") val id: Int? = null,
+    @SerializedName("nombre") val nombre: String,
+    @SerializedName("especie") val especie: String, // Debe ser 'Perro', 'Gato' o 'Otro'
+    @SerializedName("edad") val edad: Int,
+    @SerializedName("estadoSalud") val estadoSalud: String,
+    @SerializedName("estado") val estado: String,
+    @SerializedName("fotoUrl") val fotoUrl: String? = null,
+    @SerializedName("hogarId") val hogarId: Int? = null
 )
 
 data class HogarDto(
-    val id: Int,
-    val nombreVoluntario: String,
-    val direccion: String,
-    val capacidad: Int,
-    val ocupacionActual: Int,
-    val tipoMascotaAceptada: String
+    @SerializedName("id") val id: Int? = null,
+    @SerializedName("nombreVoluntario") val nombreVoluntario: String,
+    @SerializedName("direccion") val direccion: String,
+    @SerializedName("telefono") val telefono: String,
+    @SerializedName("capacidad") val capacidad: Int,
+    @SerializedName("ocupacionActual") val ocupacionActual: Int,
+    @SerializedName("tipoMascotaAceptada") val tipoMascotaAceptada: String // 'Perros', 'Gatos', 'Ambos'
 )

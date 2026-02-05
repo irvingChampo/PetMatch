@@ -19,11 +19,18 @@ import com.example.petmatch.features.petmatch.presentation.viewmodels.DashboardV
 @Composable
 fun DashboardScreen(
     viewModel: DashboardViewModel,
-    onNavigateToAddPet: () -> Unit // <--- AGREGAMOS ESTE PARÁMETRO QUE FALTABA
+    onNavigateToAddPet: () -> Unit,
+    onNavigateToAddHome: () -> Unit,
+    onNavigateToAssign: (Int, String) -> Unit // <--- Nuevo parámetro
 ) {
     val state by viewModel.uiState.collectAsState()
-    var selectedTab by remember { mutableStateOf(0) }
+    var selectedTab by remember { mutableIntStateOf(0) }
     val tabs = listOf("Mascotas", "Hogares")
+
+    // Recargar datos al entrar a la pantalla
+    LaunchedEffect(Unit) {
+        viewModel.loadData()
+    }
 
     Scaffold(
         topBar = {
@@ -34,20 +41,19 @@ fun DashboardScreen(
                 )
             )
         },
-        // Agregamos un botón flotante para navegar al formulario de mascotas
         floatingActionButton = {
-            if (selectedTab == 0) { // Solo mostrar si estamos en la pestaña de Mascotas
-                FloatingActionButton(
-                    onClick = onNavigateToAddPet, // Usamos el parámetro aquí
-                    containerColor = MaterialTheme.colorScheme.secondary,
-                    contentColor = Color.White
-                ) {
-                    Icon(Icons.Default.Add, contentDescription = "Agregar Mascota")
-                }
+            FloatingActionButton(
+                onClick = {
+                    if (selectedTab == 0) onNavigateToAddPet() else onNavigateToAddHome()
+                },
+                containerColor = MaterialTheme.colorScheme.secondary,
+                contentColor = Color.White
+            ) {
+                Icon(Icons.Default.Add, contentDescription = "Agregar")
             }
         }
-    ) { padding ->
-        Column(Modifier.padding(padding)) {
+    ) { paddingValues ->
+        Column(modifier = Modifier.padding(paddingValues)) {
             TabRow(
                 selectedTabIndex = selectedTab,
                 containerColor = Color.White,
@@ -63,9 +69,7 @@ fun DashboardScreen(
             }
 
             if (state.isLoading) {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
-                }
+                Box(Modifier.fillMaxSize(), Alignment.Center) { CircularProgressIndicator() }
             } else {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
@@ -74,7 +78,10 @@ fun DashboardScreen(
                 ) {
                     if (selectedTab == 0) {
                         items(state.mascotas) { pet ->
-                            PetCard(pet = pet)
+                            PetCard(
+                                pet = pet,
+                                onAssignClick = onNavigateToAssign // Pasamos la función
+                            )
                         }
                     } else {
                         items(state.hogares) { home ->
