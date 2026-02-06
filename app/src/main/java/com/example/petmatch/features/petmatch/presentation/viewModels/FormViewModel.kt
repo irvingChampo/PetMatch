@@ -20,56 +20,62 @@ class FormViewModel(
     private val _uiState = MutableStateFlow(FormUiState())
     val uiState = _uiState.asStateFlow()
 
-    fun savePet(nombre: String, especie: String, edad: String) {
+    // Funciones para Mascotas
+    fun savePet(nombre: String, especie: String, edad: String, id: Int = 0) {
         if (nombre.isBlank() || especie.isBlank() || edad.isBlank()) {
-            _uiState.update { it.copy(error = "Por favor, rellena todos los campos") }
+            _uiState.update { it.copy(error = "Rellena todos los campos") }
             return
         }
-        val edadInt = edad.toIntOrNull()
-        if (edadInt == null) {
-            _uiState.update { it.copy(error = "La edad debe ser un número") }
-            return
-        }
-
         _uiState.update { it.copy(isLoading = true, error = null) }
         viewModelScope.launch {
             try {
-                val newPet = Pet(0, nombre.trim(), especie, edadInt, "Saludable", "Sin hogar", null)
-                repository.createPet(newPet)
+                val pet = Pet(id, nombre.trim(), especie, edad.toIntOrNull() ?: 0, "Saludable", "Sin hogar", null)
+                if (id == 0) repository.createPet(pet) else repository.updatePet(pet)
                 _uiState.update { it.copy(isLoading = false, isSuccess = true) }
             } catch (e: Exception) {
-                _uiState.update { it.copy(isLoading = false, error = "Error: ${e.message}") }
+                _uiState.update { it.copy(isLoading = false, error = e.message) }
             }
         }
     }
 
-    fun saveHome(nombre: String, direccion: String, telefono: String, capacidad: String, tipo: String) {
-        if (nombre.isBlank() || direccion.isBlank() || telefono.isBlank() || capacidad.isBlank()) {
-            _uiState.update { it.copy(error = "Todos los campos son obligatorios") }
-            return
+    fun deletePet(id: Int) {
+        _uiState.update { it.copy(isLoading = true) }
+        viewModelScope.launch {
+            try {
+                repository.deletePet(id)
+                _uiState.update { it.copy(isLoading = false, isSuccess = true) }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(isLoading = false, error = "No se pudo eliminar") }
+            }
         }
-        val capInt = capacidad.toIntOrNull()
-        if (capInt == null) {
-            _uiState.update { it.copy(error = "La capacidad debe ser un número") }
-            return
-        }
+    }
 
+    // Funciones para Hogares
+    fun saveHome(nombre: String, direccion: String, telefono: String, capacidad: String, tipo: String, id: Int = 0) {
+        if (nombre.isBlank() || direccion.isBlank() || telefono.isBlank() || capacidad.isBlank()) {
+            _uiState.update { it.copy(error = "Campos obligatorios vacíos") }
+            return
+        }
         _uiState.update { it.copy(isLoading = true, error = null) }
         viewModelScope.launch {
             try {
-                val newHome = Home(
-                    id = 0,
-                    nombreVoluntario = nombre.trim(),
-                    direccion = direccion.trim(),
-                    capacidad = capInt,
-                    ocupacionActual = 0,
-                    tipoMascotaAceptada = tipo // 'Perros', 'Gatos', 'Ambos'
-                )
-                // Usamos el repository. Aquí pasaremos también el teléfono
-                repository.createHome(newHome)
+                val home = Home(id, nombre.trim(), direccion.trim(), capacidad.toIntOrNull() ?: 0, 0, tipo)
+                if (id == 0) repository.createHome(home, telefono) else repository.updateHome(home, telefono)
                 _uiState.update { it.copy(isLoading = false, isSuccess = true) }
             } catch (e: Exception) {
-                _uiState.update { it.copy(isLoading = false, error = "Error al crear hogar") }
+                _uiState.update { it.copy(isLoading = false, error = e.message) }
+            }
+        }
+    }
+
+    fun deleteHome(id: Int) {
+        _uiState.update { it.copy(isLoading = true) }
+        viewModelScope.launch {
+            try {
+                repository.deleteHome(id)
+                _uiState.update { it.copy(isLoading = false, isSuccess = true) }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(isLoading = false, error = "Error al eliminar hogar") }
             }
         }
     }

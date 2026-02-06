@@ -9,7 +9,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 class AppContainer(private val context: Context) {
 
-    // Base URL de tu API en Render
+    //URL de la API
     private val baseUrl = "https://backend-petmatch-api.onrender.com/api/"
 
     private val retrofit: Retrofit = Retrofit.Builder()

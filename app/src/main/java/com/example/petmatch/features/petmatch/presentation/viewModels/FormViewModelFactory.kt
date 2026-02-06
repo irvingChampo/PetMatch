@@ -5,10 +5,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.petmatch.features.petmatch.domain.repositories.PetMatchRepository
 import com.example.petmatch.features.petmatch.domain.usecases.AssignPetUseCase
 
-/**
- * Factory para instanciar el FormViewModel con sus dependencias.
- * Sigue estrictamente el patrón de inyección de dependencias manual del profesor.
- */
+
 class FormViewModelFactory(
     private val repository: PetMatchRepository,
     private val assignPetUseCase: AssignPetUseCase

@@ -13,7 +13,6 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Inicialización de módulos (DI Manual estilo profesor)
         val appContainer = AppContainer(this)
         val authModule = AuthModule(appContainer)
         val petMatchModule = PetMatchModule(appContainer)

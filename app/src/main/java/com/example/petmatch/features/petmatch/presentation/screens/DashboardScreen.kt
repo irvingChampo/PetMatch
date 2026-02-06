@@ -14,22 +14,59 @@ import androidx.compose.ui.unit.dp
 import com.example.petmatch.features.petmatch.presentation.components.HomeCard
 import com.example.petmatch.features.petmatch.presentation.components.PetCard
 import com.example.petmatch.features.petmatch.presentation.viewmodels.DashboardViewModel
+import com.example.petmatch.features.petmatch.presentation.viewmodels.FormViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(
     viewModel: DashboardViewModel,
+    formViewModel: FormViewModel,
     onNavigateToAddPet: () -> Unit,
     onNavigateToAddHome: () -> Unit,
-    onNavigateToAssign: (Int, String) -> Unit // <--- Nuevo parámetro
+    onNavigateToEditPet: (Int, String, String, Int) -> Unit,
+    onNavigateToEditHome: (Int, String, String, Int, String) -> Unit,
+    onNavigateToAssign: (Int, String) -> Unit
 ) {
     val state by viewModel.uiState.collectAsState()
     var selectedTab by remember { mutableIntStateOf(0) }
-    val tabs = listOf("Mascotas", "Hogares")
 
-    // Recargar datos al entrar a la pantalla
+    // Estados para controlar el diálogo de eliminación
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    var itemToDeleteId by remember { mutableIntStateOf(-1) }
+
+    // Recargar datos cada vez que la pantalla vuelve a estar activa
     LaunchedEffect(Unit) {
         viewModel.loadData()
+    }
+
+    // Diálogo de confirmación para eliminar
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text("Confirmar eliminación") },
+            text = { Text("¿Estás seguro de que deseas eliminar este registro? Esta acción no se puede deshacer.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        if (selectedTab == 0) {
+                            formViewModel.deletePet(itemToDeleteId)
+                        } else {
+                            formViewModel.deleteHome(itemToDeleteId)
+                        }
+                        showDeleteDialog = false
+                        // Pequeño retraso para que la API procese y luego recargamos
+                        viewModel.loadData()
+                    }
+                ) {
+                    Text("Eliminar", color = Color.Red)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) {
+                    Text("Cancelar")
+                }
+            }
+        )
     }
 
     Scaffold(
@@ -59,7 +96,7 @@ fun DashboardScreen(
                 containerColor = Color.White,
                 contentColor = MaterialTheme.colorScheme.primary
             ) {
-                tabs.forEachIndexed { index, title ->
+                listOf("Mascotas", "Hogares").forEachIndexed { index, title ->
                     Tab(
                         selected = selectedTab == index,
                         onClick = { selectedTab = index },
@@ -69,10 +106,16 @@ fun DashboardScreen(
             }
 
             if (state.isLoading) {
-                Box(Modifier.fillMaxSize(), Alignment.Center) { CircularProgressIndicator() }
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
             } else {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
+                    // CORRECCIÓN DE LOS PARÁMETROS AQUÍ:
                     contentPadding = PaddingValues(8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
@@ -80,12 +123,34 @@ fun DashboardScreen(
                         items(state.mascotas) { pet ->
                             PetCard(
                                 pet = pet,
-                                onAssignClick = onNavigateToAssign // Pasamos la función
+                                onEdit = {
+                                    onNavigateToEditPet(it.id, it.nombre, it.especie, it.edad)
+                                },
+                                onDelete = { id ->
+                                    itemToDeleteId = id
+                                    showDeleteDialog = true
+                                },
+                                onAssignClick = onNavigateToAssign
                             )
                         }
                     } else {
                         items(state.hogares) { home ->
-                            HomeCard(home = home)
+                            HomeCard(
+                                home = home,
+                                onEdit = {
+                                    onNavigateToEditHome(
+                                        it.id,
+                                        it.nombreVoluntario,
+                                        it.direccion,
+                                        it.capacidad,
+                                        it.tipoMascotaAceptada
+                                    )
+                                },
+                                onDelete = { id ->
+                                    itemToDeleteId = id
+                                    showDeleteDialog = true
+                                }
+                            )
                         }
                     }
                 }

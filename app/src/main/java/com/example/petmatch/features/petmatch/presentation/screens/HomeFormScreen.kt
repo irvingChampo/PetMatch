@@ -14,18 +14,24 @@ import com.example.petmatch.features.petmatch.presentation.viewmodels.FormViewMo
 @Composable
 fun HomeFormScreen(
     viewModel: FormViewModel,
+    homeId: Int = 0,
+    initialName: String = "",
+    initialDir: String = "",
+    initialCap: String = "",
+    initialType: String = "Perros",
     onBack: () -> Unit
 ) {
     val state by viewModel.uiState.collectAsState()
 
-    var nombre by remember { mutableStateOf("") }
-    var direccion by remember { mutableStateOf("") }
+    // Inicializamos con los valores que vienen de la navegación
+    var nombre by remember { mutableStateOf(initialName) }
+    var direccion by remember { mutableStateOf(initialDir) }
     var telefono by remember { mutableStateOf("") }
-    var capacidad by remember { mutableStateOf("") }
+    var capacidad by remember { mutableStateOf(initialCap) }
 
     val opcionesTipo = listOf("Perros", "Gatos", "Ambos")
     var expanded by remember { mutableStateOf(false) }
-    var tipoSeleccionado by remember { mutableStateOf(opcionesTipo[0]) }
+    var tipoSeleccionado by remember { mutableStateOf(if(initialType.isEmpty()) opcionesTipo[0] else initialType) }
 
     if (state.isSuccess) {
         LaunchedEffect(Unit) {
@@ -37,7 +43,7 @@ fun HomeFormScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Registrar Hogar", color = Color.White) },
+                title = { Text(if (homeId == 0) "Registrar Hogar" else "Editar Hogar", color = Color.White) },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.primary)
             )
         }
@@ -55,7 +61,7 @@ fun HomeFormScreen(
             OutlinedTextField(direccion, { direccion = it }, label = { Text("Dirección") }, modifier = Modifier.fillMaxWidth())
             Spacer(Modifier.height(16.dp))
 
-            OutlinedTextField(telefono, { telefono = it }, label = { Text("Teléfono de contacto") }, modifier = Modifier.fillMaxWidth())
+            OutlinedTextField(telefono, { telefono = it }, label = { Text("Confirmar Teléfono") }, modifier = Modifier.fillMaxWidth())
             Spacer(Modifier.height(16.dp))
 
             OutlinedTextField(capacidad, { if (it.all { c -> c.isDigit() }) capacidad = it }, label = { Text("Capacidad Máxima") }, modifier = Modifier.fillMaxWidth())
@@ -82,12 +88,12 @@ fun HomeFormScreen(
             Spacer(Modifier.height(32.dp))
 
             Button(
-                onClick = { viewModel.saveHome(nombre, direccion, telefono, capacidad, tipoSeleccionado) },
+                onClick = { viewModel.saveHome(nombre, direccion, telefono, capacidad, tipoSeleccionado, homeId) },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !state.isLoading
             ) {
                 if (state.isLoading) CircularProgressIndicator(Modifier.size(24.dp), color = Color.White)
-                else Text("Guardar Hogar")
+                else Text(if (homeId == 0) "Guardar Hogar" else "Actualizar Hogar")
             }
 
             TextButton(onClick = onBack, modifier = Modifier.fillMaxWidth()) {

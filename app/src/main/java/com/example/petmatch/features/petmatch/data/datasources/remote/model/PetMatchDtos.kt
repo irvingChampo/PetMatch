@@ -5,7 +5,7 @@ import com.google.gson.annotations.SerializedName
 data class MascotaDto(
     @SerializedName("id") val id: Int? = null,
     @SerializedName("nombre") val nombre: String,
-    @SerializedName("especie") val especie: String, // Debe ser 'Perro', 'Gato' o 'Otro'
+    @SerializedName("especie") val especie: String,
     @SerializedName("edad") val edad: Int,
     @SerializedName("estadoSalud") val estadoSalud: String,
     @SerializedName("estado") val estado: String,
@@ -20,5 +20,5 @@ data class HogarDto(
     @SerializedName("telefono") val telefono: String,
     @SerializedName("capacidad") val capacidad: Int,
     @SerializedName("ocupacionActual") val ocupacionActual: Int,
-    @SerializedName("tipoMascotaAceptada") val tipoMascotaAceptada: String // 'Perros', 'Gatos', 'Ambos'
+    @SerializedName("tipoMascotaAceptada") val tipoMascotaAceptada: String
 )
